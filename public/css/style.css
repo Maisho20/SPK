@@ -1,0 +1,38 @@
+body{
+    background: radial-gradient(circle at top left, rgba(33, 60, 72, 1), rgba(51, 32, 68, 1));
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+div.container{
+    margin: auto;
+    width: 80%;
+    padding: 10px;
+    color: white;
+}
+
+table{
+    border-collapse: collapse;
+    width: 100%;
+    background-color: transparent;
+    text-align: center;
+}
+
+.size-box{
+    padding-top: 10px;
+}
+h2, h4{
+    text-align: center;
+    color: white;
+}
+
+.btn{
+    margin-top: 25px;
+    background-color: #4c72af;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
