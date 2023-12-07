@@ -1,6 +1,7 @@
 @extends('layouts.main')
 @section('title', 'Hasil Perhitungan')
 @section('content')
+    {{-- normalisasi --}}
     <div class="container">
         <h2>Hasil Normalisasi</h2>
         <table class="table table-bordered table-striped">
@@ -25,6 +26,7 @@
         </table>
     </div>
 
+    {{-- Matrik Normalisasi Terbobot --}}
     <div class="container">
         <h2>Preference Matrix</h2>
         <table class="table table-bordered table-striped">
@@ -49,6 +51,7 @@
         </table>
     </div>
 
+    {{-- Utility Measure --}}
     <div class="container">
         <h2>Concordance Index</h2>
         <table class="table table-bordered">
@@ -75,6 +78,7 @@
         </table>
     </div>
 
+    {{-- Nilai Indeks VIKOR --}}
     <div class="container">
         <h2>Discordance Index</h2>
         <table class="table table-bordered">
@@ -101,6 +105,7 @@
         </table>
     </div>
 
+    {{-- Perangkingan --}}
     <div class="container">
         <h2>Concordance Matrix</h2>
         <table class="table table-bordered">

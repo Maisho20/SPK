@@ -24,3 +24,6 @@ Route::get('/input', function () {
 
 Route::post('/table', [ElectreController::class, 'table'])->name('table');
 Route::post('/hasil', [ElectreController::class, 'hitung'])->name('hasil');
+
+// Route::post('/table', [VikorController::class, 'table'])->name('table');
+// Route::post('/hasil', [VikorController::class, 'hitung'])->name('hasilVikor');
