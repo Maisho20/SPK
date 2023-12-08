@@ -4,7 +4,9 @@
     <div class="container">
         <h2 class="animate__animated animate__fadeInUp center">Form Tabel dengan {{ $x }} Alternatif dan
             {{ $y }} Kriteria</h2>
-        <form method="post" action="{{ route('hasil') }}">
+        {{-- <form method="post" action="{{ route('hasil') }}"> --}}
+        <form method="post" action="{{ route('hasilVikor') }}">
+
             @csrf
 
             <table class="table animate__animated animate__fadeInUp">
