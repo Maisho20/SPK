@@ -1,172 +1,400 @@
-@extends('layouts.main')
-@section('title', 'Hasil Perhitungan')
-@section('content')
-    {{-- normalisasi --}}
-    <div class="container">
-        <h2>Hasil Normalisasi</h2>
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Alternatif</th>
-                    @foreach (range(1, count($normalizations[0])) as $i)
-                        <th>Kriteria {{ $i }}</th>
-                    @endforeach
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($normalizations as $i => $row)
-                    <tr>
-                        <td>Alternatif {{ $i + 1 }}</td>
-                        @foreach ($row as $j => $value)
-                            <td>{{ number_format($value, 3) }}</td>
-                        @endforeach
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Laravel</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet"/>
+
+    <!-- Styles -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+</head>
+<body class="antialiased">
+<div class="container my-2">
+    <div class="row my-2">
+        <div class="col">
+            <h1 class="text-center">SPK Metode VIKOR</h1>
+        </div>
     </div>
 
-    {{-- Matrik Normalisasi Terbobot --}}
-    <div class="container">
-        <h2>Preference Matrix</h2>
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Alternatif</th>
-                    @foreach (range(1, count($preferenceMatrix[0])) as $i)
-                        <th>Kriteria {{ $i }}</th>
-                    @endforeach
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($preferenceMatrix as $i => $row)
-                    <tr>
-                        <td>Alternatif {{ $i + 1 }}</td>
-                        @foreach ($row as $j => $value)
-                            <td>{{ number_format($value, 4) }}</td>
-                        @endforeach
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+    <div class="accordion" id="accordionPanelsStayOpenExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="panelsStayOpen-headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true"
+                        aria-controls="panelsStayOpen-collapseOne">
+                    Matriks F
+                </button>
+            </h2>
+            <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show"
+                 aria-labelledby="panelsStayOpen-headingOne">
+                <div class="accordion-body">
+                    <div class="container">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>Alternatif</th>
+                                @foreach ($criterias as $criteria)
+                                    <th>{{ $criteria->criteria }}</th>
+                                @endforeach
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach ($alternatives as $alternative)
+                                <tr>
+                                    <td>{{ $alternative->name }}</td>
+                                    @foreach ($criterias as $criteria)
+                                        <td>
+                                            @foreach ($samples as $sample)
+                                                @if ($sample->id_alternative == $alternative->id_alternative && $sample->id_criteria == $criteria->id_criteria)
+                                                    {{ $sample->value }}
+                                                @endif
+                                            @endforeach
+                                        </td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>Criteria</th>
+                                @foreach ($criterias as $criteria)
+                                    <th>{{ $criteria->criteria }}</th>
+                                @endforeach
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>Bobot</td>
+                                @foreach ($weights as $weight)
+                                    <td>{{ $weight }}</td>
+                                @endforeach
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="panelsStayOpen-headingTwo">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="false"
+                        aria-controls="panelsStayOpen-collapseTwo">
+                    Matrix N
+                </button>
+            </h2>
+            <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse"
+                 aria-labelledby="panelsStayOpen-headingTwo">
+                <div class="accordion-body">
+                    <div class="container">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>Alternatif</th>
+                                @foreach ($criterias as $criteria)
+                                    <th>{{ $criteria->criteria }}</th>
+                                @endforeach
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach ($alternatives as $altKey => $alternative)
+                                <tr>
+                                    <td>{{ $alternative->name }}</td>
+                                    @foreach ($criterias as $critKey => $criteria)
+                                        <td>{{ $normalizedMatrix[$alternative->id_alternative][$criteria->id_criteria] }}</td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="panelsStayOpen-headingThree">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#panelsStayOpen-collapseThree" aria-expanded="false"
+                        aria-controls="panelsStayOpen-collapseThree">
+                    Matrix F*
+                </button>
+            </h2>
+            <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse"
+                 aria-labelledby="panelsStayOpen-headingThree">
+                <div class="accordion-body">
+                    <div class="container">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>Criteria</th>
+                                @foreach ($criterias as $criteria)
+                                    <th>{{ $criteria->criteria }}</th>
+                                @endforeach
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>Weight</td>
+                                @foreach ($weights as $weight)
+                                    <td>{{ $weight }}</td>
+                                @endforeach
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="container">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>Alternatif</th>
+                                @foreach ($criterias as $criteria)
+                                    <th>{{ $criteria->criteria }}</th>
+                                @endforeach
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach ($alternatives as $altKey => $alternative)
+                                <tr>
+                                    <td>{{ $alternative->name }}</td>
+                                    @foreach ($criterias as $critKey => $criteria)
+                                        <td>{{ $weightedMatrix[$alternative->id_alternative][$criteria->id_criteria] }}</td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="panelsStayOpen-headingFour">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#panelsStayOpen-collapseFour" aria-expanded="false"
+                        aria-controls="panelsStayOpen-collapseFour">
+                    Nilai Utility Measure S dan Regret Measure R
+                </button>
+            </h2>
+            <div id="panelsStayOpen-collapseFour" class="accordion-collapse collapse"
+                 aria-labelledby="panelsStayOpen-headingFour">
+                <div class="accordion-body">
+                    <div class="container">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>S</th>
+                                <th>Nilai</th>
+                                <th>R</th>
+                                <th>Nilai</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach ($s as $key => $value)
+                                <tr>
+                                    <td>S{{ $key }}</td>
+                                    <td>{{ $value }}</td>
+                                    <td>R{{ $key }}</td>
+                                    <td>{{ $r[$key] }}</td>
+                                </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="panelsStayOpen-headingFive">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#panelsStayOpen-collapseFive" aria-expanded="false"
+                        aria-controls="panelsStayOpen-collapseFive">
+                    Indeks Vikor
+                </button>
+            </h2>
+            <div id="panelsStayOpen-collapseFive" class="accordion-collapse collapse"
+                 aria-labelledby="panelsStayOpen-headingFive">
+                <div class="accordion-body">
+                    <div class="container">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>Q</th>
+                                <th>Nilai</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach ($q as $key => $value)
+                                <tr>
+                                    <td>Q{{ $key }}</td>
+                                    <td>{{ $value }}</td>
+                                </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="panelsStayOpen-headingSix">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#panelsStayOpen-collapseSix" aria-expanded="false"
+                        aria-controls="panelsStayOpen-collapseSix">
+                    Perankingan
+                </button>
+            </h2>
+            <div id="panelsStayOpen-collapseSix" class="accordion-collapse collapse"
+                 aria-labelledby="panelsStayOpen-headingSix">
+                <div class="accordion-body">
+                    <div class="container">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>Rangking</th>
+                                <th>Kode Alternatif</th>
+                                <th>Nilai Q</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach ($result as $key => $value)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $key }}</td>
+                                    <td>{{ $value }}</td>
+                                </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{--        <div class="accordion-item">--}}
+        {{--            <h2 class="accordion-header" id="panelsStayOpen-headingSeven">--}}
+        {{--                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"--}}
+        {{--                        data-bs-target="#panelsStayOpen-collapseSeven" aria-expanded="false"--}}
+        {{--                        aria-controls="panelsStayOpen-collapseSeven">--}}
+        {{--                    Matrix Discordance Dominance (G)--}}
+        {{--                </button>--}}
+        {{--            </h2>--}}
+        {{--            <div id="panelsStayOpen-collapseSeven" class="accordion-collapse collapse"--}}
+        {{--                 aria-labelledby="panelsStayOpen-headingSeven">--}}
+        {{--                <div class="accordion-body">--}}
+        {{--                    <div class="container">--}}
+        {{--                        <table class="table table-bordered">--}}
+        {{--                            <thead>--}}
+        {{--                            <tr>--}}
+        {{--                                <th>Alternatif</th>--}}
+        {{--                                @foreach ($alternatives as $alternative)--}}
+        {{--                                    <th>{{ $alternative->name }}</th>--}}
+        {{--                                @endforeach--}}
+        {{--                            </tr>--}}
+        {{--                            </thead>--}}
+        {{--                            <tbody>--}}
+        {{--                            @foreach ($alternatives as $altKey => $alternative)--}}
+        {{--                                <tr>--}}
+        {{--                                    <td>{{ $alternative->name }}</td>--}}
+        {{--                                    @foreach ($alternatives as $altKey2 => $alternative2)--}}
+        {{--                                        @if($altKey == $altKey2)--}}
+        {{--                                            <td>-</td>--}}
+        {{--                                        @else--}}
+        {{--                                            <td>{{ $gMatrix[$altKey][$altKey2] }}</td>--}}
+        {{--                                        @endif--}}
+        {{--                                    @endforeach--}}
+        {{--                                </tr>--}}
+        {{--                            @endforeach--}}
+        {{--                            </tbody>--}}
+        {{--                        </table>--}}
+        {{--                    </div>--}}
+        {{--                </div>--}}
+        {{--            </div>--}}
+        {{--        </div>--}}
+        {{--        <div class="accordion-item">--}}
+        {{--            <h2 class="accordion-header" id="panelsStayOpen-headingEight">--}}
+        {{--                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"--}}
+        {{--                        data-bs-target="#panelsStayOpen-collapseEight" aria-expanded="false"--}}
+        {{--                        aria-controls="panelsStayOpen-collapseEight">--}}
+        {{--                    Matrix Agregation Dominance (E)--}}
+        {{--                </button>--}}
+        {{--            </h2>--}}
+        {{--            <div id="panelsStayOpen-collapseEight" class="accordion-collapse collapse"--}}
+        {{--                 aria-labelledby="panelsStayOpen-headingEight">--}}
+        {{--                <div class="accordion-body">--}}
+        {{--                    <div class="container">--}}
+        {{--                        <table class="table table-bordered">--}}
+        {{--                            <thead>--}}
+        {{--                            <tr>--}}
+        {{--                                <th>Alternatif</th>--}}
+        {{--                                @foreach ($alternatives as $alternative)--}}
+        {{--                                    <th>{{ $alternative->name }}</th>--}}
+        {{--                                @endforeach--}}
+        {{--                            </tr>--}}
+        {{--                            </thead>--}}
+        {{--                            <tbody>--}}
+        {{--                            @foreach ($alternatives as $altKey => $alternative)--}}
+        {{--                                <tr>--}}
+        {{--                                    <td>{{ $alternative->name }}</td>--}}
+        {{--                                    @foreach ($alternatives as $altKey2 => $alternative2)--}}
+        {{--                                        @if($altKey == $altKey2)--}}
+        {{--                                            <td>-</td>--}}
+        {{--                                        @else--}}
+        {{--                                            <td>{{ $eMatrix[$altKey][$altKey2] }}</td>--}}
+        {{--                                        @endif--}}
+        {{--                                    @endforeach--}}
+        {{--                                </tr>--}}
+        {{--                            @endforeach--}}
+        {{--                            </tbody>--}}
+        {{--                        </table>--}}
+        {{--                    </div>--}}
+        {{--                </div>--}}
+        {{--            </div>--}}
+        {{--        </div>--}}
+        {{--        <div class="accordion-item">--}}
+        {{--            <h2 class="accordion-header" id="panelsStayOpen-headingNine">--}}
+        {{--                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"--}}
+        {{--                        data-bs-target="#panelsStayOpen-collapseNine" aria-expanded="false"--}}
+        {{--                        aria-controls="panelsStayOpen-collapseNine">--}}
+        {{--                    Hasil--}}
+        {{--                </button>--}}
+        {{--            </h2>--}}
+        {{--            <div id="panelsStayOpen-collapseNine" class="accordion-collapse collapse"--}}
+        {{--                 aria-labelledby="panelsStayOpen-headingNine">--}}
+        {{--                <div class="accordion-body">--}}
+        {{--                    <div class="container">--}}
+        {{--                        <table class="table">--}}
+        {{--                            <thead>--}}
+        {{--                            <tr>--}}
+        {{--                                <th>Peringkat</th>--}}
+        {{--                                <th>Alternatif</th>--}}
+        {{--                                <th>Prioritas</th>--}}
+        {{--                            </tr>--}}
+        {{--                            </thead>--}}
+        {{--                            <tbody>--}}
+        {{--                            @foreach ($prioritizedAlternativesWithRank as $item)--}}
+        {{--                                <tr>--}}
+        {{--                                    <td>{{ $loop->index + 1 }}</td>--}}
+        {{--                                    <td>{{ $item['alternative']->name }}</td>--}}
+        {{--                                    <td>{{ $item['rank'] }}</td>--}}
+        {{--                                </tr>--}}
+        {{--                            @endforeach--}}
+        {{--                            </tbody>--}}
+        {{--                        </table>--}}
+        {{--                    </div>--}}
+        {{--                </div>--}}
+        {{--            </div>--}}
+        {{--        </div>--}}
     </div>
-
-    {{-- Utility Measure --}}
-    <div class="container">
-        <h2>Concordance Index</h2>
-        <table class="table table-bordered">
-            @for ($i = 0; $i <= count($concordanceIndex); $i++)
-                @for ($j = 0; $j <= count($concordanceIndex[0]); $j++)
-                    @if (isset($concordanceIndex[$i][$j]))
-                        <tr>
-                            <td>C<sub>{{ $i + 1 . ', ' . $j + 1 }}</sub></td>
-                    @endif
-
-                    @if (isset($concordanceIndex[$i][$j]))
-                        <td>{{ '{' }}
-
-                            @for ($k = 0; $k <= count($concordanceIndex); $k++)
-                                @if (isset($concordanceIndex[$i][$j][$k]))
-                                    {{ $concordanceIndex[$i][$j][$k] + 1 . ' ' }}
-                                @endif
-                            @endfor {{ '}' }}
-                        </td>
-                    @endif
-                @endfor
-                </tr>
-            @endfor
-        </table>
-    </div>
-
-    {{-- Nilai Indeks VIKOR --}}
-    <div class="container">
-        <h2>Discordance Index</h2>
-        <table class="table table-bordered">
-            @for ($i = 0; $i <= count($discordanceIndex); $i++)
-                @for ($j = 0; $j <= count($discordanceIndex[0]); $j++)
-                    @if (isset($discordanceIndex[$i][$j]))
-                        <tr>
-                            <td>C<sub>{{ $i + 1 . ', ' . $j + 1 }}</sub></td>
-                    @endif
-
-                    @if (isset($discordanceIndex[$i][$j]))
-                        <td>{{ '{' }}
-
-                            @for ($k = 0; $k <= count($discordanceIndex); $k++)
-                                @if (isset($discordanceIndex[$i][$j][$k]))
-                                    {{ $discordanceIndex[$i][$j][$k] + 1 . ' ' }}
-                                @endif
-                            @endfor {{ '}' }}
-                        </td>
-                    @endif
-                @endfor
-                </tr>
-            @endfor
-        </table>
-    </div>
-
-    {{-- Perangkingan --}}
-    <div class="container">
-        <h2>Concordance Matrix</h2>
-        <table class="table table-bordered">
-            @foreach ($concordanceMatrix as $cm)
-                <tr>
-                    @for ($i = 0; $i <= count($cm); $i++)
-                        <td>{{ isset($cm[$i]) ? $cm[$i] : '-' }}</td>
-                    @endfor
-                </tr>
-            @endforeach
-        </table>
-        <h2>Discordance Matrix</h2>
-        <table class="table table-bordered">
-            @foreach ($discordanceMatrix as $dm)
-                <tr>
-                    @for ($i = 0; $i <= count($dm); $i++)
-                        @if (isset($dm[$i]))
-                            @if ($dm[$i] == 1 || $dm[$i] == 0)
-                                <td>{{ $dm[$i] }}</td>
-                            @else
-                                <td>{{ number_format($dm[$i], 4) }}</td>
-                            @endif
-                        @else
-                            <td>-</td>
-                        @endif
-                    @endfor
-                </tr>
-            @endforeach
-        </table>
-    </div>
-
-    <div class="container">
-        <h4>Concordance Dominant</h4>
-        <table class="table table-striped text-center" border="1">
-            @foreach ($concordanceDominant as $cd)
-                <tr>
-                    @for ($i = 0; $i <= count($concordanceDominant[0]); $i++)
-                        <td>{{ isset($cd[$i]) ? $cd[$i] : '-' }}</td>
-                    @endfor
-                </tr>
-            @endforeach
-        </table>
-        <h4>Discordance Dominant</h4>
-        <table class="table table-striped text-center" border="1">
-            @foreach ($discordanceDominant as $dd)
-                <tr>
-                    @for ($i = 0; $i <= count($discordanceDominant[0]); $i++)
-                        <td>{{ isset($dd[$i]) ? $dd[$i] : '-' }}</td>
-                    @endfor
-                </tr>
-            @endforeach
-        </table>
-        <h4>Agregation Dominant</h4>
-        <table class="table table-striped text-center" border="1">
-            @foreach ($agregationDominant as $ad)
-                <tr>
-                    @for ($i = 0; $i <= count($agregationDominant[0]); $i++)
-                        <td>{{ isset($ad[$i]) ? $ad[$i] : '-' }}</td>
-                    @endfor
-                </tr>
-            @endforeach
-        </table>
-    </div>
-@endsection
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+        crossorigin="anonymous"></script>
+</body>
+</html>

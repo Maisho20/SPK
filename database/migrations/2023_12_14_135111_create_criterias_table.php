@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('id_criteria', true);
             $table->string('criteria', 100);
             $table->double('weight');
-            $table->set('type', ['benefit', 'cost']);
+            $table->set('type', ['benefit', 'cost'])->default('benefit');
             $table->timestamps();
         });
     }

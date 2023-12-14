@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\alternative;
+use App\Models\criteria;
+use App\Models\sample;
 use Illuminate\Http\Request;
 
 class VikorController extends Controller
@@ -15,119 +18,111 @@ class VikorController extends Controller
     }
 
     public function hitung(Request $request){
-        $bobot = $request->input('bobot');
-        $value = $request->input('value');
-        $normalisasi = $this->normalisasi($value);
-        $normalisasiTerbobot = $this->normalisasiTerbobot($value, $bobot);
-        $utilityMeasure = $this->utilityMeasure($normalisasiTerbobot);
-        $indeksVIKOR = $this->indeksVIKOR($utilityMeasure);
-        $rangking = $this->rangking($utilityMeasure);
-        return view('hasil', [
-            'values' => $value,
-            'weights' => $bobot,
-            'normalizations' => $normalisasi,
-            'terbobot' => $normalisasiTerbobot,
-            'S' => $utilityMeasure[0],
-            'R' => $utilityMeasure[1],
-            'Q' => $indeksVIKOR,
-            'rangking' => $rangking,
-        ]);
-    }
+        foreach ($request->bobot as $key => $value) {
+            criteria::create([
+                'criteria' => 'Kriteria ' . ($key + 1),
+                'weight' => $value,
+                'type' => 'benefit',
+            ]);
+        }
+        for ($i = 0; $i < $request->alternative; $i++) {
+            alternative::create([
+                'name' => 'Alternatif ' . ($i + 1),
+            ]);
+        }
+        foreach ($request->value as $keyRow => $row) {
+            foreach ($row as $keyCol => $value) {
+                sample::create([
+                    'id_alternative' => $keyRow + 1,
+                    'id_criteria' => $keyCol + 1,
+                    'value' => $value,
+                ]);
+            }
+        }
 
-    public function normalisasi($value){//(N)
-        $normalisasi = $value;
-        $f_plus=$f_min = array_fill(0, count($value[0]), 0);
-        // nilai min dan max dari setiap kriteria
-        for ($i = 0; $i < count($value[0]); $i++) {
-            for ($j = 0; $j < count($value); $j++) {
-                if(!isset($f_plus[$j])){
-                    $f_plus[$j] = 0;
-                    $f_min[$j] = 9999999;
+        $criterias = Criteria::all();
+        // get weigt field from criteria table and / 100
+        $weights = $criterias->pluck('weight');
+        $alternatives = Alternative::all();
+        $samples = Sample::all();
+        $f_plus = [];
+        $f_min = [];
+
+        // calculate f_plus max for each criteria value and f_min min for each criteria value
+        foreach ($criterias as $criteria) {
+            $criteriaId = $criteria->id_criteria;
+            $f_plus[$criteriaId] = $samples->where('id_criteria', $criteriaId)->pluck('value')->max();
+            $f_min[$criteriaId] = $samples->where('id_criteria', $criteriaId)->pluck('value')->min();
+        }
+
+        // normalize matriks
+        $normalizedMatrix = [];
+
+        foreach ($samples as $sample) {
+            $criteriaId = $sample->id_criteria;
+            $alternativeId = $sample->id_alternative;
+            $value = $sample->value;
+
+            if (!isset($normalizedMatrix[$alternativeId])) {
+                $normalizedMatrix[$alternativeId] = [];
+            }
+
+            $normalizedMatrix[$alternativeId][$criteriaId] = ($f_plus[$criteriaId] - $value) / ($f_plus[$criteriaId] - $f_min[$criteriaId]);
+        }
+
+        // calculate weighted matrix
+        $weightedMatrix = [];
+
+        foreach ($normalizedMatrix as $alternativeId => $criteriaValues) {
+            foreach ($criteriaValues as $criteriaId => $normalizedValue) {
+                if (!isset($weightedMatrix[$alternativeId])) {
+                    $weightedMatrix[$alternativeId] = [];
                 }
-                $f_plus[$j]=($f_plus[$j] < $value ? $value : $f_plus[$j]);
-                $f_min[$j]=($f_min[$j] > $value ? $value : $f_min[$j]);
+
+                $weightedMatrix[$alternativeId][$criteriaId] = $normalizedValue * $weights[$criteriaId - 1];
             }
         }
-        // normalisasi
-        for ($i = 0; $i < count($value); $i++) {
-            for ($j = 0; $j < count($value[0]); $j++) {
-                $normalisasi[$i][$j] = number_format(($f_plus[$j] - $value)/($f_plus[$j]-$f_min[$j]), 3);
+
+        // calculate utility measure (S and R)
+        foreach ($weightedMatrix as $alternativeId => $criteriaValues) {
+            $s[$alternativeId] = 0;
+            $r[$alternativeId] = 0;
+            foreach ($criteriaValues as $criteriaId => $weightedValue) {
+                $s[$alternativeId] += $weightedValue;
+                $r[$alternativeId] = max($r[$alternativeId], $weightedValue);
             }
         }
-        return $normalisasi;
-        // $f_plus=$f_min=array();
-    }
 
-    public function normalisasiTerbobot($normalisasi, $bobot){//(F*)
-        $normalisasiTerbobot = $normalisasi;
-        for ($i = 0; $i < count($normalisasi); $i++) {
-            for ($j = 0; $j < count($normalisasi[0]); $j++) {
-                $normalisasiTerbobot[$i][$j] = number_format($normalisasi[$i][$j] * $bobot[$j], 3);
-            }
+        // calculate vikor index (Q)
+        $s_min = min($s);
+        $s_max = max($s);
+        $r_min = min($r);
+        $r_max = max($r);
+        $v = 0.5;
+
+
+        foreach ($s as $alternativeId => $s_value) {
+            $r_value = $r[$alternativeId];
+            $q[$alternativeId] = ($v * (($s_value - $s_min) / ($s_max - $s_min))) + ((1 - $v) * (($r_value - $r_min) / ($r_max - $r_min)));
         }
-        return $normalisasiTerbobot;
+
+        // merge array q and alternative
+        $result = array_combine($alternatives->pluck('name')->toArray(), $q);
+
+        // sort result by q dari rendah ke tinggi
+        arsort($result);
+        asort($result);
+
+        return view('hasil', compact('alternatives',
+            'criterias',
+            'weights',
+            'samples',
+            'normalizedMatrix',
+            'weightedMatrix',
+            's',
+            'r',
+            'q',
+            'result'));
     }
 
-    public function utilityMeasure($normalisasiTerbobot){//S dan R
-        $utilityMeasure=$S=$R=array();
-        // $S=$R=array();
-        for ($i = 0; $i < count($normalisasiTerbobot); $i++) {
-            $S[$i]=$R[$i]=0;
-            for ($j = 0; $j < count($normalisasiTerbobot[0]); $j++) {
-                $S[$i]+=$normalisasiTerbobot[$i][$j];
-                $R[$i] = ($R[$i] < $normalisasiTerbobot[$i][$j] ? $normalisasiTerbobot[$i][$j] : $R[$i]);
-            }
-        }
-        return $utilityMeasure;
-        // return $utilityMeasure=array($S, $R);
-        // return array($S, $R);
-    }
-
-    public function indeksVIKOR($utilityMeasure){//Q
-        $Q=array();
-        function get_indeksVIKOR($S,$R,$v=0.5){
-            //-- mencari nilai S_plus,S_min,R_plus dan R_min
-            $S_plus=max($S);
-            $S_min=min($S);
-            $R_plus=max($R);
-            $R_min=min($R);
-            $Q=array();
-            foreach($R as $i=>$r){
-                $Q[$i]=$v*(($S[$i]-$S_min[$i])/($S_plus[$i]-$S_min[$i]))
-                    +(1-$v)*(($R[$i]-$R_min[$i])/($R_plus[$i]-$R_min[$i]));
-            }
-            return $Q;
-        }
-        // $S_plus=max($utilityMeasure[0]);
-        // $S_min=min($utilityMeasure[0]);
-        // $R_plus=max($utilityMeasure[1]);
-        // $R_min=min($utilityMeasure[1]);
-        // $v = 0.5;
-        // $Q=array();
-        // for ($i = 0; $i < count($utilityMeasure[0]); $i++) {
-        //     $Q[$i]=$v*(($utilityMeasure[0][$i]-$S_min)/($S_plus-$S_min))
-        //         +(1-$v)*(($utilityMeasure[1][$i]-$R_min)/($R_plus-$R_min));
-        // }
-        // foreach($R as $i=>$r){
-        //     $Q[$i]=$v*(($S[$i]-$S_min[$i])/($S_plus[$i]-$S_min[$i]))
-        //         +(1-$v)*(($R[$i]-$R_min[$i])/($R_plus[$i]-$R_min[$i]));
-        // }
-        //-- inisiasi nilai v untuk nilai by vote, by consensus, dan voting by majority rule
-        $v=array(0.44,0.5,0.56);
-        //-- menghitung nilai index VIKOR (Q) untuk v=0.5 (by consensus)
-        $Q[$v[1]]=get_indeksVIKOR($utilityMeasure[0],$utilityMeasure[1],$v[1]);
-
-        return $Q[$v[1]] ;
-        // return $indeksVIKOR;
-    }
-
-    public function rangking($utilityMeasure){
-        $Q = $this->indeksVIKOR($utilityMeasure);
-        $rangking = array();
-        for ($i = 0; $i < count($Q); $i++) {
-            $rangking[$i] = array($Q[$i], $i);
-        }
-        asort($rangking);
-        return $rangking;
-    }
 }
