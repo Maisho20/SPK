@@ -72,7 +72,7 @@ class VikorController extends Controller
                 $normalizedMatrix[$alternativeId] = [];
             }
 
-            $normalizedMatrix[$alternativeId][$criteriaId] = ($f_plus[$criteriaId] - $value) / ($f_plus[$criteriaId] - $f_min[$criteriaId]);
+            $normalizedMatrix[$alternativeId][$criteriaId] = number_format(($f_plus[$criteriaId] - $value) / ($f_plus[$criteriaId] - $f_min[$criteriaId]), 3);
         }
 
         // calculate weighted matrix
@@ -84,7 +84,7 @@ class VikorController extends Controller
                     $weightedMatrix[$alternativeId] = [];
                 }
 
-                $weightedMatrix[$alternativeId][$criteriaId] = $normalizedValue * $weights[$criteriaId - 1];
+                $weightedMatrix[$alternativeId][$criteriaId] = number_format($normalizedValue * $weights[$criteriaId - 1], 3);
             }
         }
 
@@ -93,8 +93,8 @@ class VikorController extends Controller
             $s[$alternativeId] = 0;
             $r[$alternativeId] = 0;
             foreach ($criteriaValues as $criteriaId => $weightedValue) {
-                $s[$alternativeId] += $weightedValue;
-                $r[$alternativeId] = max($r[$alternativeId], $weightedValue);
+                $s[$alternativeId] += number_format($weightedValue, 3);
+                $r[$alternativeId] = number_format(max($r[$alternativeId], $weightedValue),3);
             }
         }
 
@@ -108,7 +108,7 @@ class VikorController extends Controller
 
         foreach ($s as $alternativeId => $s_value) {
             $r_value = $r[$alternativeId];
-            $q[$alternativeId] = ($v * (($s_value - $s_min) / ($s_max - $s_min))) + ((1 - $v) * (($r_value - $r_min) / ($r_max - $r_min)));
+            $q[$alternativeId] = number_format(($v * (($s_value - $s_min) / ($s_max - $s_min))) + ((1 - $v) * (($r_value - $r_min) / ($r_max - $r_min))),3);
         }
 
         // merge array q and alternative

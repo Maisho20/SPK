@@ -1,5 +1,4 @@
 <?php
-use App\Http\Controllers\ElectreController;
 use App\Http\Controllers\VikorController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,9 +20,6 @@ Route::get('/', function () {
 Route::get('/input', function () {
     return view('input');
 })->name('input');
-
-// Route::post('/table', [ElectreController::class, 'table'])->name('table');
-// Route::post('/hasil', [ElectreController::class, 'hitung'])->name('hasil');
 
 Route::post('/table', [VikorController::class, 'table'])->name('table');
 Route::post('/hasil', [VikorController::class, 'hitung'])->name('hasilVikor');

@@ -41,7 +41,7 @@
                 </tbody>
             </table>
             <input type="number" name="alternative" value="{{ $x }}" hidden>
-            <button type="submit" class="btn btn-primary animate__animated animate__fadeInUp">hitung</button>
+            <button type="submit" class="btn btn-primary animate__animated animate__fadeInUp">Hitung</button>
         </form>
     </div>
 @endsection
