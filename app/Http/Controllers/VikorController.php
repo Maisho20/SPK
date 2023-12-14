@@ -46,7 +46,7 @@ class VikorController extends Controller
         $sumWeight = $weights->sum();
         // calculate wieght / sum of weight
         foreach ($weights as $key => $weight) {
-            $weights[$key] = $weight / $sumWeight;
+            $weights[$key] = number_format($weight / $sumWeight, 3);
         }
         $alternatives = Alternative::all();
         $samples = Sample::all();

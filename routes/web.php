@@ -23,3 +23,8 @@ Route::get('/input', function () {
 
 Route::post('/table', [VikorController::class, 'table'])->name('table');
 Route::post('/hasil', [VikorController::class, 'hitung'])->name('hasilVikor');
+
+// make route to go back to tabel page
+Route::get('/table', function () {
+    return view('table');
+})->name('table');

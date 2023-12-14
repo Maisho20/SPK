@@ -29,13 +29,16 @@
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary animate__animated animate__fadeInUp mb-3">Edit</button>
+        {{-- make a button to go back to the table --}}
+        <a href="{{ route('table') }}" class="btn btn-primary animate__animated animate__fadeInUp mb-3">Edit</a>
 
-        <div class="accordion" id="accordionPanelsStayOpenExample">
-            <div class="accordion-item animate__animated animate__fadeInUp">
+        {{-- <button type="submit" class="btn btn-primary animate__animated animate__fadeInUp mb-3">Edit</button> --}}
+
+        <div class="accordion" id="accordionPanelsStayOpenExample animate__animated animate__fadeInUp">
+            <div class="accordion-item">
                 <h2 class="accordion-header" id="panelsStayOpen-headingOne">
                     <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true"
+                        data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="false"
                         aria-controls="panelsStayOpen-collapseOne">
                         Matriks F
                     </button>
