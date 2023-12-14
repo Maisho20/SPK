@@ -30,7 +30,7 @@
         </div>
 
         {{-- make a button to go back to the table --}}
-        <a href="{{ route('table') }}" class="btn btn-primary animate__animated animate__fadeInUp mb-3">Edit</a>
+        <a href="{{ route('editTable') }}" class="btn btn-primary animate__animated animate__fadeInUp mb-3">Edit</a>
 
         {{-- <button type="submit" class="btn btn-primary animate__animated animate__fadeInUp mb-3">Edit</button> --}}
 

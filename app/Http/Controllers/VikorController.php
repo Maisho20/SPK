@@ -11,10 +11,48 @@ class VikorController extends Controller
 {
     public function table(Request $request)
     {
+        $criterias = criteria::all();
+        $alternatives = alternative::all();
+        $samples = sample::all();
+        if ($criterias != null && $alternatives != null) {
+            route('editTable', compact('criterias', 'alternatives', 'samples'));
+        }
         $x = $request->input('x');//alternatif
         $y = $request->input('y');//kriteria
 
         return view('table')->with(['x' => $x, 'y' => $y]);
+    }
+
+    public function editTable()
+    {
+        $criterias = criteria::all();
+        $alternatives = alternative::all();
+        $samples = sample::all();
+        return view('editTable', compact('criterias', 'alternatives', 'samples'));
+    }
+
+    public function updateTable(Request $request)
+    {
+        $criterias = criteria::all();
+        $alternatives = alternative::all();
+        $samples = sample::all();
+        foreach ($criterias as $criteria) {
+            $criteria->update([
+                'criteria' => $request->input('criteria' . $criteria->id_criteria),
+                'weight' => $request->input('weight' . $criteria->id_criteria),
+            ]);
+        }
+        foreach ($alternatives as $alternative) {
+            $alternative->update([
+                'name' => $request->input('alternative' . $alternative->id_alternative),
+            ]);
+        }
+        foreach ($samples as $sample) {
+            $sample->update([
+                'value' => $request->input('value' . $sample->id_alternative . $sample->id_criteria),
+            ]);
+        }
+        return redirect()->route('hasilVikor');
     }
 
     public function hitung(Request $request){
@@ -25,16 +63,18 @@ class VikorController extends Controller
                 'type' => 'benefit',
             ]);
         }
+        $criterias = criteria::all();
         for ($i = 0; $i < $request->alternative; $i++) {
             alternative::create([
                 'name' => 'Alternatif ' . ($i + 1),
             ]);
         }
+        $alternatives = alternative::all();
         foreach ($request->value as $keyRow => $row) {
             foreach ($row as $keyCol => $value) {
                 sample::create([
-                    'id_alternative' => $keyRow + 1,
-                    'id_criteria' => $keyCol + 1,
+                    'id_alternative' => $alternatives[$keyRow]->id_alternative,
+                    'id_criteria' => $criterias[$keyCol]->id_criteria,
                     'value' => $value,
                 ]);
             }

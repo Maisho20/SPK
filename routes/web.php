@@ -14,6 +14,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
+    $criterias = \App\Models\criteria::all();
+    $alternatives = \App\Models\alternative::all();
+    $samples = \App\Models\sample::all();
+    if ($samples->count() > 0) {
+        return redirect()->route('editTable');
+    }
     return redirect()->route('input');
 });
 
@@ -22,9 +28,6 @@ Route::get('/input', function () {
 })->name('input');
 
 Route::post('/table', [VikorController::class, 'table'])->name('table');
+Route::get('/editTable', [VikorController::class, 'editTable'])->name('editTable');
+Route::put('/updateTable', [VikorController::class, 'updateTable'])->name('updateTable');
 Route::post('/hasil', [VikorController::class, 'hitung'])->name('hasilVikor');
-
-// make route to go back to tabel page
-Route::get('/table', function () {
-    return view('table');
-})->name('table');
