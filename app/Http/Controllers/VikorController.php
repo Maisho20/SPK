@@ -43,6 +43,11 @@ class VikorController extends Controller
         $criterias = Criteria::all();
         // get weigt field from criteria table and / 100
         $weights = $criterias->pluck('weight');
+        $sumWeight = $weights->sum();
+        // calculate wieght / sum of weight
+        foreach ($weights as $key => $weight) {
+            $weights[$key] = $weight / $sumWeight;
+        }
         $alternatives = Alternative::all();
         $samples = Sample::all();
         $f_plus = [];
